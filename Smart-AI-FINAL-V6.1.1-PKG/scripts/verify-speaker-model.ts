@@ -23,3 +23,4 @@ const norm = Math.sqrt(embedding.reduce((sum, value) => sum + value * value, 0))
 assert.ok(Math.abs(norm - 1) < 1e-5);
 
 console.log(JSON.stringify({ ok: true, health, embeddingNorm: norm }, null, 2));
+process.exit(0);
