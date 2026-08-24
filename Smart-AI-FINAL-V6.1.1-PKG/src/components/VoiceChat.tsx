@@ -3333,7 +3333,29 @@ fetch('/api/user/profile', {
              
 
             
+<div>
+  <label className="block text-xs font-bold text-slate-300 mb-2">
+    نبرة الصوت المباشر (Voice Tone)
+  </label>
 
+  <select
+    value={voiceName}
+    onChange={(e) => setVoiceName(e.target.value)}
+    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 text-xs outline-none focus:border-blue-500"
+  >
+    <optgroup label="أصوات رجالية">
+      <option value="Charon">Charon — عميق وواثق</option>
+      <option value="Fenrir">Fenrir — قوي وحازم</option>
+      <option value="Puck">Puck — ديناميكي ومرن</option>
+    </optgroup>
+
+    <optgroup label="أصوات نسائية">
+      <option value="Zephyr">Zephyr — هادئ وطبيعي</option>
+      <option value="Kore">Kore — عميق وواضح</option>
+      <option value="Aoede">Aoede — لطيف ودافئ</option>
+    </optgroup>
+  </select>
+</div>
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1.5">
                   ذاكرة المؤسسة وسياق العمل (Company Context)
