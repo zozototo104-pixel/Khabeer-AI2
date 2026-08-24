@@ -561,6 +561,7 @@ async function startServer() {
     let activeOrgId: number | null = null;
     let activeLeadExpertId = 'governance_advisor';
     let lastInjectedSpeakerId = '';
+let lastInjectedSpeakerTurnId = -1;
     let lastSpeakerTask: Promise<any> | null = null;
     let pendingSelfIdentifiedName = '';
     let activeSpeakerTurnId = 0;
@@ -686,9 +687,9 @@ async function startServer() {
         }));
       }
 
-      if (isCalibration || diagResult.identitySource !== 'VERIFIED' || !diagResult.speakerId) return;
-      if (lastInjectedSpeakerId === diagResult.speakerId) return;
-      lastInjectedSpeakerId = diagResult.speakerId;
+      if (lastInjectedSpeakerId === diagResult.speakerId && lastInjectedSpeakerTurnId === currentTurn) return;
+lastInjectedSpeakerId = diagResult.speakerId;
+lastInjectedSpeakerTurnId = currentTurn;
 
       if (activeLiveSession && typeof activeLiveSession.sendRealtimeInput === 'function') {
         try {
