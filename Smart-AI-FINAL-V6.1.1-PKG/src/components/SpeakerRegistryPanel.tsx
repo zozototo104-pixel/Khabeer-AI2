@@ -424,6 +424,9 @@ const audioBase64 = btoa(binary);
                         <span className="text-[10px] text-slate-400 block font-mono mt-0.5">
                           ID: {p.id} • {p.sampleCount} عينات
                         </span>
+<span className="text-[9px] text-slate-500 block font-mono mt-0.5">
+  Model: {p.embeddingModel || 'UNKNOWN'}
+</span>
                       </div>
                     </div>
 
