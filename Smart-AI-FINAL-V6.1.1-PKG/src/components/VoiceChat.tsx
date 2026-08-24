@@ -2064,13 +2064,13 @@ const [systemInstruction, setSystemInstruction] = useState(
   }, []);
 
   const saveSettings = async () => {
-    localStorage.setItem('gemini_system_instruction_v9', systemInstruction);
+
     localStorage.setItem('gemini_voice_name', voiceName);
-    localStorage.setItem('gemini_user_kunya', speakerNickname);
+
     localStorage.setItem('gemini_greeting_mode', greetingMode);
     localStorage.setItem('gemini_company_context', companyContext);
     localStorage.setItem('gemini_expert_mode', expertMode);
-    localStorage.setItem('gemini_expert_name', expertName);
+
     localStorage.setItem('smart_expert_panel', JSON.stringify(selectedExpertIds));
     localStorage.setItem('smart_expert_lead', leadExpertId);
     localStorage.setItem('gemini_meeting_type', meetingType);
@@ -2082,23 +2082,18 @@ const [systemInstruction, setSystemInstruction] = useState(
       const activeToken = token || await getAuthToken();
       if (activeToken) {
         await Promise.all([
-          fetch('/api/user/profile', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${activeToken}`
-          },
-          body: JSON.stringify({
-            nickname: speakerNickname,
-            displayName: speakerNickname,
-            preferences: {
-              preferredVoice: voiceName,
-              tone: 'warm_professional',
-              directAddress: speakerNickname,
-              honorific: speakerNickname.startsWith('أبو') ? 'أبا ' + speakerNickname.replace(/^أبو\s*/, '') : speakerNickname
-            }
-          })
-          }),
+fetch('/api/user/profile', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${activeToken}`
+  },
+  body: JSON.stringify({
+    preferences: {
+      preferredVoice: voiceName
+    }
+  })
+}),
           activeSessionId ? fetch(`/api/sessions/${activeSessionId}/experts`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${activeToken}` },
@@ -3315,34 +3310,7 @@ const [systemInstruction, setSystemInstruction] = useState(
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    اسم أو كنية المتحدث الرئيسي / صاحب الجلسة
-                  </label>
-                  <input
-                    type="text"
-                    value={speakerNickname}
-                    onChange={(e) => setSpeakerNickname(e.target.value)}
-                    placeholder="مثال: أحمد أو أمينة"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                  <p className="text-[10px] text-slate-400 mt-1">يتم استدعاء هذا الاسم تلقائياً أو وفق المشارك المضاف للاجتماع</p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    لقب المستشار الرقابي (الخبير)
-                  </label>
-                  <input
-                    type="text"
-                    value={expertName}
-                    onChange={(e) => setExpertName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
-              </div>
-
+           
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1.5">
@@ -3359,55 +3327,12 @@ const [systemInstruction, setSystemInstruction] = useState(
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    وضع ونمط التحليل (Expert Mode)
-                  </label>
-                  <select
-                    value={expertMode}
-                    onChange={(e) => setExpertMode(e.target.value as keyof typeof EXPERT_MODES)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs outline-none"
-                  >
-                    {Object.entries(EXPERT_MODES).map(([key, mode]) => (
-                      <option key={key} value={key}>{mode.label}</option>
-                    ))}
-                  </select>
-                </div>
+              
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                  نبرة الصوت المباشر (Voice Tone)
-                </label>
-                <select
-                  value={voiceName}
-                  onChange={(e) => setVoiceName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs outline-none"
-                >
-                  <optgroup label="أصوات رجالية">
-                    <option value="Charon">صوت رجالي عميق وواثق (Charon)</option>
-                    <option value="Fenrir">صوت رجالي قوي وحازم (Fenrir)</option>
-                    <option value="Puck">صوت رجالي ديناميكي (Puck)</option>
-                  </optgroup>
-                  <optgroup label="أصوات نسائية">
-                    <option value="Zephyr">صوت نسائي رسمي وهادئ (Zephyr)</option>
-                    <option value="Kore">صوت نسائي عميق (Kore)</option>
-                    <option value="Aoede">صوت نسائي لطيف (Aoede)</option>
-                  </optgroup>
-                </select>
-              </div>
+             
 
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                  تعليمات الشخصية والرقابة (System Instructions)
-                </label>
-                <textarea
-                  value={systemInstruction}
-                  onChange={(e) => setSystemInstruction(e.target.value)}
-                  rows={4}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs outline-none resize-none leading-relaxed"
-                />
-              </div>
+            
 
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1.5">
