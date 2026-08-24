@@ -512,6 +512,7 @@ const [currentTab, setCurrentTab] = useState<'chat' | 'dashboard' | 'knowledge' 
                 >
                   <option value="dashboard" className="bg-slate-900">📊 لوحة القيادة والمؤشرات</option>
                   <option value="ai_tasks" className="bg-slate-900">🤖 مهام وتكليفات الذكاء (SOPs والأدلة)</option>
+<option value="settings" className="bg-slate-900">⚙️ الإعدادات</option>
                   <option value="meetings" className="bg-slate-900">📅 إدارة وجدولة الاجتماعات</option>
                   <option value="chat" className="bg-slate-900">🎙️ المستشار الذكي (صوتي وتفاعلي)</option>
                   <option value="organization" className="bg-slate-900">🏢 إعداد وهيكل المؤسسة</option>
