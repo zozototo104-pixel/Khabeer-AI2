@@ -60,6 +60,7 @@ export class SpeakerDiarizer {
     if (this.totalBufferedSamples < minSamples) return null;
 
     const pcm = this.concatenateBuffer();
+const embeddingPcm = this.prepareEmbeddingWindow(pcm);
     const quality = AudioFeatures.checkAudioQuality(pcm);
     if (!quality.isValid) return null;
 
@@ -68,7 +69,7 @@ export class SpeakerDiarizer {
     try {
       // 5-second hard timeout for the neural model to prevent pipeline freeze
       embedding = await Promise.race([
-        this.provider.extractEmbedding(pcm),
+        this.provider.extractEmbedding(embeddingPcm),
         new Promise<number[]>((_, reject) => setTimeout(() => reject(new Error('EMBEDDING_TIMEOUT')), 5000))
       ]);
     } catch (error) {
@@ -103,6 +104,7 @@ export class SpeakerDiarizer {
     }
 
     const pcm = this.concatenateBuffer();
+const embeddingPcm = this.prepareEmbeddingWindow(pcm);
     const endTime = Date.now();
     const quality = AudioFeatures.checkAudioQuality(pcm);
     if (!quality.isValid) {
@@ -118,7 +120,7 @@ export class SpeakerDiarizer {
     try {
       // 5-second hard timeout for finalize as well
       embedding = await Promise.race([
-        this.provider.extractEmbedding(pcm),
+        this.provider.extractEmbedding(embeddingPcm),
         new Promise<number[]>((_, reject) => setTimeout(() => reject(new Error('EMBEDDING_TIMEOUT')), 5000))
       ]);
       result = this.registry.identifySpeaker(embedding, {
@@ -201,7 +203,53 @@ export class SpeakerDiarizer {
     }
     return output;
   }
+private prepareEmbeddingWindow(pcm: Float32Array): Float32Array {
+  if (!pcm?.length) return pcm;
 
+  const sampleRate = SPEAKER_THRESHOLDS.SAMPLE_RATE;
+
+  // Keep speaker recognition focused on a stable voiced window.
+  // Do not modify the original meeting/recording PCM.
+  const targetSamples = Math.min(
+    pcm.length,
+    Math.floor(sampleRate * 2.5)
+  );
+
+  // Short segments are already small enough.
+  if (pcm.length <= targetSamples) {
+    return new Float32Array(pcm);
+  }
+
+  const stepSamples = Math.max(
+    1,
+    Math.floor(sampleRate * 0.25)
+  );
+
+  let bestStart = 0;
+  let bestEnergy = -1;
+
+  for (
+    let start = 0;
+    start + targetSamples <= pcm.length;
+    start += stepSamples
+  ) {
+    let sumSquares = 0;
+
+    for (let i = start; i < start + targetSamples; i++) {
+      const value = pcm[i];
+      sumSquares += value * value;
+    }
+
+    const energy = sumSquares / targetSamples;
+
+    if (energy > bestEnergy) {
+      bestEnergy = energy;
+      bestStart = start;
+    }
+  }
+
+  return pcm.slice(bestStart, bestStart + targetSamples);
+}
   private clearBuffer(): void {
     this.activeBuffer = [];
     this.totalBufferedSamples = 0;
