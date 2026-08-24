@@ -373,6 +373,17 @@ const [systemInstruction, setSystemInstruction] = useState(
   const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null);
   const [activeSpeakerName, setActiveSpeakerName] = useState<string | null>(null);
   const [currentSimilarity, setCurrentSimilarity] = useState<number>(0);
+const [lastSpeakerDiagnostic, setLastSpeakerDiagnostic] = useState<{
+  name: string;
+  source: string;
+  phase: string;
+  similarity: number;
+}>({
+  name: 'UNKNOWN',
+  source: 'UNKNOWN',
+  phase: 'NONE',
+  similarity: 0,
+});
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
 
   // Refs
@@ -1635,7 +1646,12 @@ const [systemInstruction, setSystemInstruction] = useState(
           }
           if (msg.type === 'speaker_identified') {
             const isVerified = msg.identitySource === 'VERIFIED';
-            
+            setLastSpeakerDiagnostic({
+  name: msg.speakerName || 'UNKNOWN',
+  source: msg.identitySource || 'UNKNOWN',
+  phase: msg.phase || 'FINAL',
+  similarity: typeof msg.similarity === 'number' ? msg.similarity : 0,
+});
             // Stale/Overwrite protection: 
             // Do NOT let a weak PROBE or UNKNOWN FINAL overwrite an already VERIFIED speaker in the UI for this turn
             if (isVerified) {
@@ -3431,6 +3447,21 @@ fetch('/api/user/profile', {
               <span className={activeSpeakerName && activeSpeakerName !== 'متحدث غير معروف' ? "text-emerald-400" : "text-yellow-400"}>
                 LAST RESULT: {activeSpeakerName || 'UNKNOWN'}
               </span>
+<span
+  className={
+    lastSpeakerDiagnostic.source === 'VERIFIED'
+      ? 'text-cyan-400'
+      : 'text-yellow-400'
+  }
+>
+  BIOMETRIC: {lastSpeakerDiagnostic.name}
+  {' | '}
+  {lastSpeakerDiagnostic.source}
+  {' | '}
+  {Math.round(lastSpeakerDiagnostic.similarity * 100)}%
+  {' | '}
+  {lastSpeakerDiagnostic.phase}
+</span>
             </div>
             <div className="flex items-center gap-3">
               <button
