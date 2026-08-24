@@ -15,7 +15,7 @@ import PWAInstallBanner from './components/PWAInstallBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import GuestMeetingJoin from './components/GuestMeetingJoin';
 import { useVoiceReminder } from './hooks/useVoiceReminder';
-
+import Settings from './components/Settings';
 function MainApp() {
   const allowDevDirectAuth = true;
   const [user, setUser] = useState<User | any | null>(null);
@@ -611,6 +611,7 @@ const [currentTab, setCurrentTab] = useState<'chat' | 'dashboard' | 'knowledge' 
               />
             )}
             {currentTab === 'dashboard' && <Dashboard token={token} />}
+{currentTab === 'settings' && <Settings />}
             {currentTab === 'knowledge' && <KnowledgeBase token={token} />}
           </ErrorBoundary>
         </div>
