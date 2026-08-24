@@ -687,7 +687,8 @@ let lastInjectedSpeakerTurnId = -1;
         }));
       }
 
-      if (lastInjectedSpeakerId === diagResult.speakerId && lastInjectedSpeakerTurnId === currentTurn) return;
+      if (isCalibration || diagResult.identitySource !== 'VERIFIED' || !diagResult.speakerId) return;
+if (lastInjectedSpeakerId === diagResult.speakerId && lastInjectedSpeakerTurnId === currentTurn) return;
 lastInjectedSpeakerId = diagResult.speakerId;
 lastInjectedSpeakerTurnId = currentTurn;
 
