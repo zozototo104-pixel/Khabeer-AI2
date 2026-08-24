@@ -2684,6 +2684,17 @@ fetch('/api/user/profile', {
               )}
 
               {/* Server-authoritative speaker recognition and diarization panel */}
+<div className="w-full max-w-2xl mx-auto mt-2 px-3 py-2 rounded-xl bg-slate-950 border border-cyan-500/40 text-xs font-mono">
+  <span className="text-slate-400">BIOMETRIC: </span>
+  <span className="font-bold text-cyan-300">
+    {lastSpeakerDiagnostic.name}
+  </span>
+  <span className="text-slate-400">
+    {' | '}{lastSpeakerDiagnostic.source}
+    {' | '}{Math.round(lastSpeakerDiagnostic.similarity * 100)}%
+    {' | '}{lastSpeakerDiagnostic.phase}
+  </span>
+</div>
               <div className="w-full max-w-2xl mx-auto mt-2 shrink-0">
                 <SpeakerRegistryPanel
                   registry={speakerRegistryRef.current}
