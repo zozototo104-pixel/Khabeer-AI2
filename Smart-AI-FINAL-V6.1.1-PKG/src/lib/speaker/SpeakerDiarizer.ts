@@ -61,6 +61,22 @@ export class SpeakerDiarizer {
 
     const pcm = this.concatenateBuffer();
 const embeddingPcm = this.prepareEmbeddingWindow(pcm);
+const probeDurationSec = embeddingPcm.length / SPEAKER_THRESHOLDS.SAMPLE_RATE;
+let probeSumSq = 0;
+let probePeak = 0;
+
+for (let i = 0; i < embeddingPcm.length; i++) {
+  const v = embeddingPcm[i];
+  probeSumSq += v * v;
+  const a = Math.abs(v);
+  if (a > probePeak) probePeak = a;
+}
+
+const probeRms = Math.sqrt(probeSumSq / Math.max(1, embeddingPcm.length));
+
+this.callbacks.onDebugLog?.(
+  `[Speaker:ProbeAudio] duration=${probeDurationSec.toFixed(3)}s samples=${embeddingPcm.length} rms=${probeRms.toFixed(5)} peak=${probePeak.toFixed(5)}`
+);
     const quality = AudioFeatures.checkAudioQuality(pcm);
     if (!quality.isValid) return null;
 
@@ -105,6 +121,22 @@ const embeddingPcm = this.prepareEmbeddingWindow(pcm);
 
     const pcm = this.concatenateBuffer();
 const embeddingPcm = this.prepareEmbeddingWindow(pcm);
+const finalDurationSec = embeddingPcm.length / SPEAKER_THRESHOLDS.SAMPLE_RATE;
+let finalSumSq = 0;
+let finalPeak = 0;
+
+for (let i = 0; i < embeddingPcm.length; i++) {
+  const v = embeddingPcm[i];
+  finalSumSq += v * v;
+  const a = Math.abs(v);
+  if (a > finalPeak) finalPeak = a;
+}
+
+const finalRms = Math.sqrt(finalSumSq / Math.max(1, embeddingPcm.length));
+
+this.callbacks.onDebugLog?.(
+  `[Speaker:FinalAudio] duration=${finalDurationSec.toFixed(3)}s samples=${embeddingPcm.length} rms=${finalRms.toFixed(5)} peak=${finalPeak.toFixed(5)}`
+);
     const endTime = Date.now();
     const quality = AudioFeatures.checkAudioQuality(pcm);
     if (!quality.isValid) {
