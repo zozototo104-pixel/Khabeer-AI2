@@ -4443,7 +4443,24 @@ ${transcript}
           }
         }
         if (sampleErrors.some(e => e.index === i)) continue;
+const enrollDurationSec = pcm.length / 16000;
+let enrollSumSq = 0;
+let enrollPeak = 0;
 
+for (let j = 0; j < pcm.length; j++) {
+  const v = pcm[j];
+  enrollSumSq += v * v;
+  const a = Math.abs(v);
+  if (a > enrollPeak) enrollPeak = a;
+}
+
+const enrollRms = Math.sqrt(
+  enrollSumSq / Math.max(1, pcm.length)
+);
+
+console.log(
+  `[Speaker:EnrollAudio] name=${name.trim()} sample=${i} duration=${enrollDurationSec.toFixed(3)}s samples=${pcm.length} rms=${enrollRms.toFixed(5)} peak=${enrollPeak.toFixed(5)}`
+);
         // Extract embedding via ONNX Worker (same path as live recognition)
         const emb = await speechEngine.getProvider().extractEmbedding(pcm);
         if (!Array.isArray(emb) || emb.length !== 512) {
