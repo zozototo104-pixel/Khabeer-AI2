@@ -24,7 +24,7 @@ function MainApp() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [activeSession, setActiveSession] = useState<string | number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState<'chat' | 'dashboard' | 'knowledge' | 'organization' | 'meetings' | 'ai_tasks'>('dashboard');
+const [currentTab, setCurrentTab] = useState<'chat' | 'dashboard' | 'knowledge' | 'organization' | 'meetings' | 'ai_tasks' | 'settings'>('dashboard');
 
   // Deletion modal state for sidebar
   const [sessionToDelete, setSessionToDelete] = useState<{ id: number; title: string } | null>(null);
