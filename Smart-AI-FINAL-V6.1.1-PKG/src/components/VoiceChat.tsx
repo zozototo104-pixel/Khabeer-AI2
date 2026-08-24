@@ -17,6 +17,7 @@ import { SpeakerProfile } from '../lib/speaker/types';
 import { SpeakerRegistry } from '../lib/speaker/SpeakerRegistry';
 import { DeepSpeakerEmbeddingProvider } from '../lib/speaker/DeepSpeakerEmbeddingProvider';
 import SpeakerRegistryPanel from './SpeakerRegistryPanel';
+import { loadAssistantSettings } from './Settings';
 
 export interface VoiceFootprint {
   id: string; // e.g. 'male_1', 'male_2', 'female_1'
@@ -197,7 +198,30 @@ export default function VoiceChat({
 [[COMPANY_CONTEXT_PLACEHOLDER]]
 `;
 
-  const [systemInstruction, setSystemInstruction] = useState(() => localStorage.getItem('gemini_system_instruction_v10') || defaultSystemInstruction);
+const assistantSettings = loadAssistantSettings();
+
+const assistantIdentityContext = `
+هوية المساعد المخصصة:
+- اسم المستخدم: ${assistantSettings.userName || 'غير محدد'}
+- الاسم الذي يفضّل المستخدم أن يُنادى به: ${assistantSettings.addressUserAs || assistantSettings.userName || 'غير محدد'}
+- اسم المساعد: ${assistantSettings.assistantName || 'الخبير الذكي'}
+- وصف العلاقة: ${assistantSettings.relationship || 'علاقة مهنية عامة'}
+- التخصص المهني المختار: ${assistantSettings.expertRole || 'general'}
+- سمات الشخصية المختارة: ${(assistantSettings.personality || []).join(', ') || 'friendly'}
+- تعليمات المستخدم الإضافية: ${assistantSettings.customInstructions || 'لا توجد'}
+
+قواعد تطبيق الهوية:
+- استخدم اسم المساعد المخصص عند التحدث عن نفسك.
+- خاطب المستخدم بالاسم أو اللقب الذي حدده، ما لم يطلب خلاف ذلك.
+- إذا وصف المستخدم العلاقة مثل "زوجتي" أو "صديقتي" أو "مستشارتي"، فاجعل أسلوب الحوار منسجماً مع هذا الوصف ضمن حدود كونك مساعد ذكاء اصطناعي.
+- طبّق سمات الشخصية المختارة على النبرة والأسلوب، من دون التضحية بالدقة أو السلامة أو النزاهة المهنية.
+- طبّق التخصص المهني المختار على نوع التحليل والأولويات والمصطلحات المستخدمة.
+`;
+const [systemInstruction, setSystemInstruction] = useState(
+  () =>
+    localStorage.getItem('gemini_system_instruction_v10') ||
+    `${defaultSystemInstruction}\n\n${assistantIdentityContext}`
+);
   const [voiceName, setVoiceName] = useState(() => localStorage.getItem('gemini_voice_name') || 'Zephyr');
   const [speakerNickname, setSpeakerNickname] = useState(() => localStorage.getItem('gemini_user_kunya') || 'رئيس الجلسة');
   const [greetingMode, setGreetingMode] = useState<'auto' | 'all' | 'custom'>(() => (localStorage.getItem('gemini_greeting_mode') as 'auto' | 'all' | 'custom') || 'auto');
@@ -954,7 +978,7 @@ export default function VoiceChat({
         },
         body: JSON.stringify({
           text: trimmedText,
-          systemInstruction: customInstruction
+      systemInstruction: `${customInstruction}\n\n${assistantIdentityContext}`
         })
       });
 
