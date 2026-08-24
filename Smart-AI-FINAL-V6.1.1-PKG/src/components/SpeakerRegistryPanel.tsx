@@ -178,7 +178,17 @@ export const SpeakerRegistryPanel: React.FC<SpeakerRegistryPanelProps> = ({
           pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
         }
         const pcm16Buffer = pcm16.buffer.slice(0, pcm16.byteLength);
-        const audioBase64 = btoa(String.fromCharCode(...new Uint8Array(pcm16Buffer)));
+        const bytes = new Uint8Array(pcm16Buffer);
+let binary = '';
+const CHUNK_SIZE = 0x8000;
+
+for (let offset = 0; offset < bytes.length; offset += CHUNK_SIZE) {
+  binary += String.fromCharCode(
+    ...bytes.subarray(offset, Math.min(offset + CHUNK_SIZE, bytes.length))
+  );
+}
+
+const audioBase64 = btoa(binary);
         return { audio: audioBase64, sampleRate: 16000 };
       });
 
