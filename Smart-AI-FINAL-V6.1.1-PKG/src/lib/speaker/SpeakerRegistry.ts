@@ -90,6 +90,56 @@ export class SpeakerRegistry {
       if (!compatible) continue;
 
       const isCandidate = Boolean(raw.isCandidate || raw.status === 'CANDIDATE' || raw.id.startsWith('candidate_') || raw.id.startsWith('unknown_'));
+const normalizedName = normalizeName(raw.name);
+const normalizedEmbeddings = embeddings.length ? embeddings : [centroid];
+const embeddingModel = raw.embeddingModel;
+
+// Merge only genuine duplicates:
+// same normalized name + same model + same embedding dimension + not candidate.
+if (!isCandidate) {
+  const duplicate = [...this.profiles.values()].find((profile) =>
+    !profile.isCandidate &&
+    profile.name === normalizedName &&
+    profile.centroidEmbedding.length === centroid.length &&
+    (profile.embeddingModel || '') === (embeddingModel || '')
+  );
+
+  if (duplicate) {
+    const mergedEmbeddings = [
+      ...duplicate.embeddings,
+      ...normalizedEmbeddings,
+    ].slice(-SPEAKER_THRESHOLDS.MAX_ENROLLMENT_SAMPLES);
+
+    duplicate.embeddings = mergedEmbeddings;
+    duplicate.centroidEmbedding = AudioFeatures.computeCentroid(mergedEmbeddings);
+    duplicate.sampleCount = mergedEmbeddings.length;
+    duplicate.confidence = Math.max(
+      duplicate.confidence,
+      Math.max(0, Math.min(1, Number(raw.confidence) || 0.9))
+    );
+    duplicate.createdAt = Math.min(
+      duplicate.createdAt,
+      Number(raw.createdAt) || duplicate.createdAt
+    );
+    duplicate.updatedAt = Math.max(
+      duplicate.updatedAt,
+      Number(raw.updatedAt) || 0
+    );
+
+    if (raw.lastSeenAt) {
+      duplicate.lastSeenAt = Math.max(
+        duplicate.lastSeenAt || 0,
+        Number(raw.lastSeenAt)
+      );
+    }
+
+    if (!duplicate.embeddingModel && embeddingModel) {
+      duplicate.embeddingModel = embeddingModel;
+    }
+
+    continue;
+  }
+}
       this.profiles.set(raw.id, {
         id: raw.id,
         name: normalizeName(raw.name),
